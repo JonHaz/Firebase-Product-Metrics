@@ -1,0 +1,14 @@
+SELECT 
+  CONCAT(event_param_data,'_',user_pseudo_id) as case_id,
+  event_name as activity,
+  event_timestamp as timestamp,
+  employee_id,
+  ID
+  
+FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE` 
+WHERE 
+  event_param_key = 'ga_session_number'AND 
+  event_name <> 'screen_view' AND 
+  event_name <> 'user_engagement' AND 
+  event_name <> 'app_update' AND
+  event_name <> 'os_update'
