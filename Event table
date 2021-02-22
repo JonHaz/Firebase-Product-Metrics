@@ -6,7 +6,7 @@ SELECT
       CAST(value.double_value AS STRING),
       CAST(value.float_value AS STRING)) AS event_param_data,
   FORMAT_TIME('%T', TIME(TIMESTAMP_MICROS(event_timestamp))) AS event_time,
-  PARSE_DATE('%m/%d/%Y',event_date) AS event_date,
+   PARSE_DATE('%Y%m%d',event_date) AS event_date,
   FORMAT_TIMESTAMP('%m/%d/%Y %H:%M', TIMESTAMP_MICROS(event_timestamp)) AS event_timestamp,
   user_id as employee_id,
   user_pseudo_id,
