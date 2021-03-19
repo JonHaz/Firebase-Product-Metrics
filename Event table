@@ -1,3 +1,5 @@
+
+WITH historical AS (
 SELECT
   event_name,
   params.key AS event_param_key,
@@ -17,8 +19,36 @@ SELECT
   app_info.id
   
 FROM
-  `fho-mloto.analytics_235595469.events_*`, -- update to your table
+  `nuclear-planner-pro.analytics_261056075.events_*`, -- update to your table
    UNNEST (event_params) AS params
 WHERE
    _TABLE_SUFFIX BETWEEN '20200101'
-  AND '20221231'
+  AND '20221231' )
+
+, daily AS (
+
+    SELECT
+  event_name,
+  params.key AS event_param_key,
+    COALESCE(CAST(value.string_value AS STRING),
+      CAST(value.int_value AS STRING),
+      CAST(value.double_value AS STRING),
+      CAST(value.float_value AS STRING)) AS event_param_data,
+  FORMAT_TIME('%T', TIME(TIMESTAMP_MICROS(event_timestamp))) AS event_time,
+   PARSE_DATE('%Y%m%d',event_date) AS event_date,
+  FORMAT_TIMESTAMP('%m/%d/%Y %H:%M', TIMESTAMP_MICROS(event_timestamp)) AS event_timestamp,
+  user_id as employee_id,
+  user_pseudo_id,
+  geo.region,
+  geo.city,
+  stream_id,
+  device.web_info.hostname,
+  app_info.id
+  
+FROM
+  `nuclear-planner-pro.analytics_261056075.events_intraday_*`, -- update to your table
+   UNNEST (event_params) AS params
+)
+  SELECT * FROM historical
+  UNION ALL 
+  SELECT * FROM daily
