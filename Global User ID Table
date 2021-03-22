@@ -1,20 +1,26 @@
-WITH a AS
-(
+WITH USER_ID AS (
 SELECT
-  user_id as employee_id,
-  user_pseudo_id,
-  CONCAT(cast(user_id AS string),user_pseudo_id) AS guid
+  employee_id, -- or user_id, lan_id
+  user_pseudo_id
+
   
 FROM
-  `fho-mloto.analytics_235595469.events_*`, -- update to your table
-   UNNEST (event_params) AS params
-WHERE
-   _TABLE_SUFFIX BETWEEN '20200101'
-  AND '20221231' )
+  `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE` -- update to your table
+), 
 
-  SELECT 
-    employee_id,
-    user_pseudo_id,
-    guid
-  FROM a
-  WHERE guid IS NOT NULL
+PARAMETER_ID AS(
+SELECT
+  event_param_data AS lan_id, --- or employee_id
+  user_pseudo_id,
+
+FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
+WHERE
+  event_param_key = 'lan_id'
+)
+
+SELECT
+  DISTINCT USER_ID.user_pseudo_id,
+  USER_ID.employee_id,
+  PARAMETER_ID.lan_id
+FROM USER_ID
+INNER JOIN PARAMETER_ID ON USER_ID.user_pseudo_id = PARAMETER_ID.user_pseudo_id
