@@ -1,0 +1,40 @@
+WITH lan_id AS(
+    SELECT DISTINCT event_param_data AS lan_id, user_pseudo_id
+    FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
+    WHERE event_param_key IN ('lan_id','lanId') AND event_name ='lan_id'
+)
+,
+lotoNumber AS (
+    SELECT event_param_data AS lotoNumber, event_timestamp
+    FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
+    WHERE event_param_key = 'lotoNumber' AND event_name = 'lotoNumber'
+)
+,
+site_id AS (
+    SELECT event_param_data AS site_id, event_timestamp
+    FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
+    WHERE event_param_key = 'site_id' AND event_name = 'site_id'
+)
+,
+device_id AS (
+    SELECT event_param_data AS device_id, event_timestamp
+    FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
+    WHERE event_param_key = 'deviceScanned' AND event_name LIKE'%device%'
+)
+
+SELECT
+    DISTINCT event_name,
+    event.user_pseudo_id,
+    event.event_date,
+    event.event_timestamp,
+    device_id.device_id,
+    lan_id.lan_id,
+    site_id.site_id,
+    lotoNumber.lotoNumber,
+    id
+FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE` AS event
+LEFT JOIN  lan_id ON event.user_pseudo_id = lan_id.user_pseudo_id
+LEFT JOIN site_id ON event.event_timestamp = site_id.event_timestamp
+LEFT JOIN lotoNumber ON event.event_timestamp = lotoNumber.event_timestamp
+LEFT JOIN device_id  ON event.event_timestamp = device_id.event_timestamp
+WHERE events.event_timestamp IN (site_id.event_timestamp,tag_id.event_timestamp, lotoNumber.event_timestamp, mode.event_timestamp)
