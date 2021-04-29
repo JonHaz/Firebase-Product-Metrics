@@ -1,40 +1,69 @@
-WITH lan_id AS(
-    SELECT DISTINCT event_param_data AS lan_id, user_pseudo_id
+WITH events AS(
+    SELECT
+    event_name,
+    --event_param_key,
+    --event_param_data,
+    employee_id,
+    user_pseudo_id,
+    event_date,
+    event_timestamp,
+    --event_bundle_sequence_id,
+    id
     FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
-    WHERE event_param_key IN ('lan_id','lanId') AND event_name ='lan_id'
+    WHERE event_name NOT IN ('app_exception','app_update','os_update','screen_view','session_start','user_engagement','mode_selected','first_open')
+        AND event_param_key NOT IN ('engaged_session_event','firebase_event_origin','ga_session_number','ga_session_id','firebase_screen_class','firebase_screen_id','firebase_conversion')
 )
 ,
-lotoNumber AS (
-    SELECT event_param_data AS lotoNumber, event_timestamp
+lan_id AS (
+    SELECT event_param_data AS lan_id, user_pseudo_id
     FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
-    WHERE event_param_key = 'lotoNumber' AND event_name = 'lotoNumber'
+    WHERE event_param_key = 'lan_id'
 )
 ,
 site_id AS (
     SELECT event_param_data AS site_id, event_timestamp
     FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
-    WHERE event_param_key = 'site_id' AND event_name = 'site_id'
+    WHERE event_param_key = 'site_id'
 )
 ,
-device_id AS (
-    SELECT event_param_data AS device_id, event_timestamp
+tag_id AS (
+    SELECT event_param_data AS tag_id, event_timestamp
     FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
-    WHERE event_param_key = 'deviceScanned' AND event_name LIKE'%device%'
+    WHERE event_param_key IN ('tag_id','tagId')
 )
-
+,
+lotoNumber AS (
+    SELECT event_param_data AS lotoNumber, event_timestamp
+    FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
+    WHERE event_param_key = 'lotoNumber'
+)
+,
+mode AS (
+    SELECT event_param_data AS mode, event_timestamp
+    FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE`
+    WHERE event_param_key = 'mode'
+)
 SELECT
-    DISTINCT event_name,
-    event.user_pseudo_id,
-    event.event_date,
-    event.event_timestamp,
-    device_id.device_id,
+   --- /*
+    DISTINCT CONCAT(events.event_name, CAST(events.event_timestamp AS STRING)) AS KEY,
+    events.event_name,
+    --events.event_param_key,
+   -- events.event_param_data,
+    events.employee_id,
+    events.user_pseudo_id,
+    events.event_date,
+    events.event_timestamp,
+    events.id,
     lan_id.lan_id,
     site_id.site_id,
+    tag_id.tag_id,
     lotoNumber.lotoNumber,
-    id
-FROM `fho-mloto.analytics_235595469.MLOTO_EVENT_TABLE` AS event
-LEFT JOIN  lan_id ON event.user_pseudo_id = lan_id.user_pseudo_id
-LEFT JOIN site_id ON event.event_timestamp = site_id.event_timestamp
-LEFT JOIN lotoNumber ON event.event_timestamp = lotoNumber.event_timestamp
-LEFT JOIN device_id  ON event.event_timestamp = device_id.event_timestamp
-WHERE events.event_timestamp IN (site_id.event_timestamp,tag_id.event_timestamp, lotoNumber.event_timestamp, mode.event_timestamp)
+    mode.mode
+    ---*/
+FROM events 
+LEFT JOIN lan_id ON events.user_pseudo_id = lan_id.user_pseudo_id
+LEFT JOIN site_id ON events.event_timestamp = site_id.event_timestamp
+LEFT JOIN tag_id ON events.event_timestamp = tag_id.event_timestamp
+LEFT JOIN lotoNumber ON events.event_timestamp = lotoNumber.event_timestamp
+LEFT JOIN mode ON events.event_timestamp = mode.event_timestamp
+ORDER BY event_date DESC
