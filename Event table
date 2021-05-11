@@ -7,16 +7,14 @@ SELECT
       CAST(value.double_value AS STRING),
       CAST(value.float_value AS STRING)) AS event_param_data,
   PARSE_DATE('%Y%m%d',event_date) AS event_date,
-  FORMAT_TIMESTAMP('%m%d%Y %H:%M', TIMESTAMP_MICROS(event_timestamp + event_server_timestamp_offset)) AS event_timestamp,
-  FORMAT_TIMESTAMP('%m%d%Y %H:%M', TIMESTAMP_MICROS(event_timestamp )) AS oldevent_timestamp,
-  FORMAT_TIMESTAMP('%m%d%Y %H:%M', TIMESTAMP_MICROS( event_server_timestamp_offset)) AS offevent_timestamp,
+  FORMAT_TIMESTAMP('%m%d%Y %H:%M', TIMESTAMP_MICROS(event_timestamp )) AS event_timestamp,
   --event_bundle_sequence_id,
   --user_id as employee_id,
   user_pseudo_id,
   --geo.region,
   --geo.city,
   --stream_id,
-  --device.web_info.hostname,
+  device.web_info.hostname,
   app_info.id
   
 FROM
@@ -37,16 +35,13 @@ WHERE
       CAST(value.double_value AS STRING),
       CAST(value.float_value AS STRING)) AS event_param_data,
   PARSE_DATE('%Y%m%d',event_date) AS event_date,
-   FORMAT_TIMESTAMP('%m%d%Y %H:%M', TIMESTAMP_MICROS(event_timestamp + event_server_timestamp_offset)) AS event_timestamp,
-  FORMAT_TIMESTAMP('%m%d%Y %H:%M', TIMESTAMP_MICROS(event_timestamp )) AS oldevent_timestamp,
-  FORMAT_TIMESTAMP('%m%d%Y %H:%M', TIMESTAMP_MICROS( event_server_timestamp_offset)) AS offevent_timestamp,
-  --event_bundle_sequence_id,
+  FORMAT_TIMESTAMP('%m%d%Y %H:%M', TIMESTAMP_MICROS(event_timestamp )) AS event_timestamp,
   --user_id as employee_id,
   user_pseudo_id,
   --geo.region,
   --geo.city,
   --stream_id,
-  --device.web_info.hostname,
+  device.web_info.hostname,
   app_info.id
   
 FROM
@@ -58,4 +53,4 @@ WHERE event_name NOT IN ('page_view','app_exception','app_update','os_update','s
   SELECT * FROM historical
   UNION ALL 
   SELECT * FROM daily
-  ORDER BY offevent_timestamp DESC
+  ORDER BY event_timestamp DESC
